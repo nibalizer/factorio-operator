@@ -1,0 +1,24 @@
+# permissions for end users to edit factorioservers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: factorioserver-editor-role
+rules:
+- apiGroups:
+  - automators.labs.nibz.science
+  resources:
+  - factorioservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - automators.labs.nibz.science
+  resources:
+  - factorioservers/status
+  verbs:
+  - get

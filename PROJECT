@@ -1,0 +1,7 @@
+domain: labs.nibz.science
+repo: github.com/nibalizer/factorio-operator
+resources:
+- group: automators
+  kind: FactorioServer
+  version: v1
+version: "2"

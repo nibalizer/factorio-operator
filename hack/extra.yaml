@@ -1,0 +1,7 @@
+apiVersion: automators.labs.nibz.science/v1
+kind: FactorioServer
+metadata:
+  name: factorioserver-secondone
+spec:
+  # Add fields here
+  foo: bar
