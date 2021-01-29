@@ -23,6 +23,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -80,11 +81,14 @@ var _ = Describe("Factorio controller", func() {
 			Expect(createdFactorioServer.Spec.Foo).Should(Equal("bar"))
 
 			// Check for service as well
+		})
 
+		It("Should also create a deployment with a hostpath", func() {
+			ctx := context.Background()
 			factorioServerServiceLookupKey := types.NamespacedName{Name: FactorioServerName, Namespace: FactorioServerNamespace}
 			createdFactorioServerService := &v1.Service{}
 
-			// We'll need to retry getting this newly created FactorioServer, given that creation may not immediately happen.
+			// We'll need to retry getting this newly created service, given that creation may not immediately happen.
 			Eventually(func() bool {
 				err := k8sClient.Get(ctx, factorioServerServiceLookupKey, createdFactorioServerService)
 				if err != nil {
@@ -96,6 +100,21 @@ var _ = Describe("Factorio controller", func() {
 			var np v1.ServiceType
 			np = "NodePort"
 			Expect(createdFactorioServerService.Spec.Type).Should(Equal(np))
+
+			factorioServerDeployLookupKey := types.NamespacedName{Name: FactorioServerName, Namespace: FactorioServerNamespace}
+			createdFactorioServerDeploy := &appsv1.Deployment{}
+
+			// We'll need to retry getting this deployment, given that creation may not immediately happen.
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, factorioServerDeployLookupKey, createdFactorioServerDeploy)
+				if err != nil {
+					return false
+				}
+				return true
+			}, timeout, interval).Should(BeTrue())
+			// Verify that the service is a NodePort
+			Expect(len(createdFactorioServerDeploy.Spec.Template.Spec.Volumes)).Should(Equal(1))
+			Expect(createdFactorioServerDeploy.Spec.Template.Spec.Containers[0].VolumeMounts[0].MountPath).Should(Equal("/factorio"))
 
 		})
 	})

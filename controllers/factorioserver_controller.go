@@ -25,6 +25,7 @@ import (
 	"github.com/go-logr/logr"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
@@ -277,10 +278,26 @@ func (r *FactorioServerReconciler) constructDeployment(factorio *automatorsv1.Fa
 			Namespace:   factorio.Namespace,
 		},
 		Spec: core.PodSpec{
+			Volumes: []core.Volume{
+				{
+					Name: "hostvol",
+					VolumeSource: core.VolumeSource{
+						EmptyDir: &core.EmptyDirVolumeSource{
+							SizeLimit: resource.NewQuantity(5*1000*1000*1000, resource.DecimalSI),
+						},
+					},
+				},
+			},
 			Containers: []core.Container{
 				{
 					Name:  "factorio",
 					Image: "factoriotools/factorio",
+					VolumeMounts: []core.VolumeMount{
+						{
+							Name:      "hostvol",
+							MountPath: "/factorio",
+						},
+					},
 				},
 			},
 		},
